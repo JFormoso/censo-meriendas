@@ -53,11 +53,9 @@ install.packages(c("tidyverse","lubridate","janitor","gt","forcats","tidytext","
 
 ### Checklist para llegar listxs al taller
 
-[] Clonaste o descargaste el repo en tu compu
-
-[] Tenés Quarto, R y Git instalados
-
-[] Pudiste renderizar index.qmd localmente
+[ ] Clonaste o descargaste el repo en tu compu
+[ ] Tenés Quarto, R y Git instalados
+[ ] Pudiste renderizar index.qmd localmente
 
 ### Contacto
 
