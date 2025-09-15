@@ -18,7 +18,7 @@ Elegí uno de estos métodos y asegurate de tener el repo en tu compu al momento
 
 - Opción 1: Clonar con Git
 
-```
+```bash
 
 git clone https://github.com/JFormoso/censo-meriendas
 cd censo-meriendas
@@ -36,7 +36,7 @@ Luego, descomprimí la carpeta en tu equipo.
 
 Dentro del proyecto instalá el paquete **renv** y luego utilizá la función **restore** para instalar todos los paquetes utilizados en el proyecto.
 
-```
+```{r}
 
 install.packages("renv")
 renv::restore()      # instala paquetes desde renv.lock (si está en el repo)
@@ -46,16 +46,16 @@ renv::restore()      # instala paquetes desde renv.lock (si está en el repo)
 
 Instalá todos los paquetes que usamos para el proyecto de forma manual con **install.packages()**.
 
-```
+```{r}
 install.packages(c("tidyverse","lubridate","janitor","gt","forcats","tidytext","wordcloud2","stopwords","scales"))
 
 ```
 
 ### Checklist para llegar listxs al taller
 
-☐ Clonaste o descargaste el repo en tu compu
-☐ Tenés Quarto, R y Git instalados
-☐ Pudiste renderizar index.qmd localmente
+[]Clonaste o descargaste el repo en tu compu
+[] Tenés Quarto, R y Git instalados
+[] Pudiste renderizar index.qmd localmente
 
 ### Contacto
 
