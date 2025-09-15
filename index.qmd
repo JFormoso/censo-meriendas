@@ -1,0 +1,195 @@
+---
+title: "Censo de Meriendas"
+logo: img/mate.png
+format: dashboard
+
+theme: 
+  - minty
+  
+execute: 
+  echo: false
+  warning: false
+---
+
+```{r}
+#| label: paquetes
+
+library(tidyverse)
+library(janitor)
+library(gt)
+library(tidytext)
+library(wordcloud2)
+library(stopwords)
+library(googlesheets4)
+library(scales)
+
+# Desactiva OAuth para leer hojas públicas (p. ej., “cualquiera con el enlace”).
+# Úsalo solo si la hoja es realmente pública; si no, dará error.
+googlesheets4::gs4_deauth() 
+
+```
+
+
+```{r}
+#| label: datos
+
+raw <- read_sheet("1M4BfvfClvKog7rmbxh6UzzOAf84jPz87Tl-UHM5hvBA")
+
+df <- raw |>
+  janitor::clean_names() |>
+  rename(
+    marca_temporal = marca_temporal,
+    pais           = desde_que_pais_te_estas_conectando,
+    bebida         = con_que_bebida_te_gusta_merendar_normalmente,
+    comida         = que_te_gusta_comer_normalmente,
+    horario    = en_que_horario_aproximadamente_merendas,
+    lugar          = donde_soles_merendar,
+    imprescindible = que_es_lo_que_nunca_puede_faltar_en_tu_merienda_ideal) |>
+  mutate(marca_temporal = ymd_hms(marca_temporal)) |>
+  mutate(horario = hour(horario))
+
+n_resp   <- nrow(df)
+n_paises <- n_distinct(df$pais, na.rm = TRUE)
+top_bebida <-   df |> 
+  count(bebida, sort = TRUE) |>
+  slice_head(n = 1) |> 
+  pull(bebida) 
+
+
+```
+
+
+## Fila 1. País, hora y dónde
+
+```{r}
+#| label: pais-de-participantes
+#| title: "Participación por país"
+
+df %>%
+  filter(!is.na(pais), pais != "") %>%
+  count(pais) %>%
+  mutate(perc = n / sum(n)) %>%
+  ggplot(aes(x = fct_reorder(pais, perc), y = perc, fill = pais)) +
+  geom_col() +
+  geom_text(aes(label = percent(perc, accuracy = 0.1)),
+            hjust = -0.1, size = 3.8) +
+  coord_flip(clip = "off") +
+  scale_y_continuous(labels = percent_format(),
+                     expand = expansion(mult = c(0, 0.1))) +
+  paletteer::scale_fill_paletteer_d("palettesForR::Pastels") +
+  labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none")
+  
+
+```
+
+
+```{r}
+#| label: horario-de-merienda
+#| title: "Horario de merienda"
+
+df %>%
+  filter(!is.na(horario), horario != "") %>%
+  ggplot(aes(x = horario)) +
+  geom_histogram(fill = "#0072B2") +
+  scale_y_continuous(labels = percent_format(),
+                     expand = expansion(mult = c(0, 0.1))) +
+ labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none")
+  
+
+```
+
+
+```{r}
+#| label: lugar-de-merienda
+#| title: "¿Dónde se merienda?"
+
+df %>%
+  filter(!is.na(lugar), lugar != "") %>%
+  count(lugar, name = "n") %>%
+  mutate(perc = n / sum(n),
+         lbl  = percent(perc, accuracy = 0.1)) %>%
+  ggplot(aes(x = 2, y = perc, fill = fct_reorder(lugar, perc))) +
+  geom_col(width = 1, color = "white") +
+  coord_polar(theta = "y") +
+  xlim(0.5, 2.5) +                          
+  geom_text(aes(y = cumsum(perc) - perc/2,  
+                label = lbl),
+            color = "white", size = 4) +
+  paletteer::scale_fill_paletteer_d("palettesForR::Pastels") +
+  labs(fill = "") +
+  theme_void() +
+  theme(legend.position = "right")
+
+```
+
+## Fila 2. Bebida, comida y qué no puede faltar
+
+```{r}
+#| label: bebida
+#| title: "Bebidas más elegidas"
+ 
+df %>%
+  filter(!is.na(bebida), bebida != "") %>%
+  count(bebida) %>%
+  mutate(perc = n / sum(n)) %>%
+  ggplot(aes(x = fct_reorder(bebida, perc), y = perc, fill = bebida)) +
+  geom_col() +
+  geom_text(aes(label = percent(perc, accuracy = 0.1)),
+            hjust = -0.1, size = 3.8) +
+  coord_flip(clip = "off") +
+  scale_y_continuous(labels = percent_format(),
+                     expand = expansion(mult = c(0, 0.1))) +
+  paletteer::scale_fill_paletteer_d("palettesForR::Pastels") +
+  labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+```
+
+
+```{r}
+#| label: comida
+#| title: "Tipo de comida"
+
+df %>%
+  filter(!is.na(comida), comida != "") %>%
+  count(comida, name = "n") %>%
+  mutate(perc = n / sum(n),
+         lbl  = percent(perc, accuracy = 0.1)) %>%
+  ggplot(aes(x = 2, y = perc, fill = fct_reorder(comida, perc))) +
+  geom_col(width = 1, color = "white") +
+  coord_polar(theta = "y") +
+  xlim(0.5, 2.5) +                          
+  geom_text(aes(y = cumsum(perc) - perc/2,  
+                label = lbl),
+            color = "white", size = 4) +
+  paletteer::scale_fill_paletteer_d("palettesForR::Pastels") +
+  labs(fill = "") +
+  theme_void() +
+  theme(legend.position = "right")
+
+
+```
+
+```{r}
+#| label: que-no-puede-faltar
+#| title: "Qué no puede faltar"
+
+
+# preparar texto
+freq <- df |>
+  select(imprescindible) |>
+  mutate(imprescindible = tolower(imprescindible)) |>
+  unnest_tokens(word, imprescindible) |>
+  filter(!word %in% stopwords("es"), str_detect(word, "[[:alpha:]]")) |>
+  count(word, sort = TRUE)
+
+wordcloud2(freq, size = 0.8, shape = "circle", rotateRatio = 0)
+
+
+```
+
