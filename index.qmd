@@ -185,7 +185,7 @@ freq <- df |>
   select(imprescindible) |>
   mutate(imprescindible = tolower(imprescindible)) |>
   unnest_tokens(word, imprescindible) |>
-  filter(!word %in% stopwords("es"), str_detect(word, "[[:alpha:]]")) |>
+  filter(!word %in% stopwords("es")) |>
   count(word, sort = TRUE)
 
 wordcloud2(freq, size = 0.8, shape = "circle", rotateRatio = 0)
