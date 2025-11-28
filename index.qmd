@@ -57,7 +57,7 @@ top_bebida <-   df |>
   pull(bebida) 
 
 ultima_respuesta     <- max(df$marca_temporal, na.rm = TRUE)
-ultima_actualizacion <- Sys.time()
+ultima_actualizacion <- Sys.time()-hours(3)
 
 
 url_formulario <- "https://forms.gle/4AGu9StQKVsVvj5x7"
