@@ -1,5 +1,5 @@
 ---
-title: "Censo de Meriendas"
+title: "Censo de Meriendas versión hecatombe"
 logo: img/mate.png
 format: dashboard
 theme: 
